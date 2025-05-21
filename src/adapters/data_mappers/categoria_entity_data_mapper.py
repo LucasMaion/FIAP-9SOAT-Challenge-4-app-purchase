@@ -1,15 +1,14 @@
-from src.adapters.driven.infra.models.categories import Category
 from src.core.domain.entities.categoria_entity import PartialCategoriaEntity
 
 
 class CategoriaEntityDataMapper:
     @classmethod
-    def from_db_to_domain(cls, category: Category):
+    def from_api_to_domain(cls, api_response: dict):
         return PartialCategoriaEntity(
-            id=category.id,
-            description=category.description,
-            is_component=category.is_component,
-            created_at=category.created_at,
-            updated_at=category.updated_at,
-            deleted_at=category.deleted_at,
+            id=api_response["id"],
+            description=api_response["description"],
+            is_component=api_response["is_component"],
+            created_at=api_response["created_at"],
+            updated_at=api_response["updated_at"],
+            deleted_at=api_response["deleted_at"],
         )

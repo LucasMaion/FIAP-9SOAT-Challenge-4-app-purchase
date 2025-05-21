@@ -53,7 +53,7 @@ class TestPedidoService:
         return PedidoServiceCommand(
             purchase_repository=purchase_repository,
             purchase_query=purchase_query,
-            produto_query=produto_query,
+            produto_repository=produto_query,
             cache_service=cache_service,
         )
 
@@ -126,12 +126,37 @@ class TestPedidoService:
         return produto_entity
 
     @pytest.fixture
-    def selected_product_entity(self, product_entity: ProdutoEntity):
-        component = deepcopy(product_entity)
+    def partial_product_entity(self, preco: PrecoValueObject):
+        produto_entity = PartialProdutoEntity(
+            id=1,
+            name="added_component",
+            description="produto_test_mock",
+            price=preco,
+            category=CategoriaEntity(
+                name="categoria",
+                id=1,
+                created_at=datetime(2021, 1, 1),
+                updated_at=datetime(2021, 1, 1),
+            ),
+            is_active=False,
+            created_at=datetime(2021, 1, 1),
+            updated_at=datetime(2021, 1, 1),
+            components=[PartialProdutoEntity(id=2), PartialProdutoEntity(id=3)],
+            allow_components=False,
+        )
+        components = [deepcopy(produto_entity) for _ in range(2)]
+        for component in components:
+            component.id += 1
+        produto_entity.components = components
+        return produto_entity
+
+    @pytest.fixture
+    def selected_product_entity(self, partial_product_entity: PartialProdutoEntity):
+        component = deepcopy(partial_product_entity)
         component.id = 2
         return ProdutoEscolhidoEntity(
             id=1,
-            product=product_entity,
+            product=partial_product_entity,
             added_components=[component],
             created_at=datetime(2021, 1, 1),
             updated_at=datetime(2021, 1, 1),
@@ -206,7 +231,7 @@ class TestPedidoService:
         purchase_service.purchase_repository.get_by_purchase_id = MagicMock(
             return_value=pedido_aggregate
         )
-        purchase_service.produto_query.get_only_entity = MagicMock(
+        purchase_service.produto_repository.get_entity = MagicMock(
             return_value=pedido_aggregate.purchase.selected_products[0].product
         )
         purchase_service.purchase_repository.update = MagicMock(
@@ -222,7 +247,7 @@ class TestPedidoService:
         purchase_service.purchase_repository.get_by_purchase_id = MagicMock(
             return_value=None
         )
-        purchase_service.produto_query.get_only_entity = MagicMock(
+        purchase_service.produto_repository.get_entity = MagicMock(
             return_value=pedido_aggregate.purchase.selected_products[0].product
         )
         with pytest.raises(ValueError, match="Pedido não encontrado"):
@@ -234,7 +259,7 @@ class TestPedidoService:
         purchase_service.purchase_repository.get_by_purchase_id = MagicMock(
             return_value=pedido_aggregate
         )
-        purchase_service.produto_query.get_only_entity = MagicMock(return_value=None)
+        purchase_service.produto_repository.get_entity = MagicMock(return_value=None)
         with pytest.raises(ValueError, match="Produto não encontrado"):
             purchase_service.add_new_product(1, 1)
 
@@ -246,7 +271,7 @@ class TestPedidoService:
         purchase_service.purchase_repository.get_by_purchase_id = MagicMock(
             return_value=pedido
         )
-        purchase_service.produto_query.get_only_entity = MagicMock(return_value=pedido)
+        purchase_service.produto_repository.get_entity = MagicMock(return_value=pedido)
         with pytest.raises(ValueError, match="Pedido não está mais aberto."):
             purchase_service.add_new_product(1, 1)
 
@@ -256,7 +281,7 @@ class TestPedidoService:
         purchase_service.purchase_repository.get_by_purchase_id = MagicMock(
             return_value=pedido_aggregate
         )
-        purchase_service.produto_query.get_only_entity = MagicMock(
+        purchase_service.produto_repository.get_entity = MagicMock(
             side_effect=[
                 pedido_aggregate.purchase.selected_products[0].product,
                 pedido_aggregate.purchase.selected_products[0].product.components[0],
@@ -277,7 +302,7 @@ class TestPedidoService:
         purchase_service.purchase_repository.get_by_purchase_id = MagicMock(
             return_value=pedido_aggregate
         )
-        purchase_service.produto_query.get_only_entity = MagicMock(
+        purchase_service.produto_repository.get_entity = MagicMock(
             side_effect=[
                 pedido_aggregate.purchase.selected_products[0].product,
                 component,

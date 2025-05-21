@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
 
 from src.core.application.ports.pedido_query import PedidoQuery
-from src.core.application.ports.produto_query import ProdutoQuery
 from src.core.domain.aggregates.pedido_aggregate import PedidoAggregate
 from src.core.domain.entities.compra_entity import PartialCompraEntity
 from src.core.domain.repositories.pedido_repository import PedidoRepository
+from src.core.domain.repositories.produto_repository import ProdutoRepository
 from src.core.helpers.enums.compra_status import CompraStatus
 from src.core.helpers.interfaces.chace_service import CacheService
 
@@ -14,12 +14,12 @@ class IPedidoCommand(ABC):
         self,
         purchase_repository: PedidoRepository,
         purchase_query: PedidoQuery,
-        produto_query: ProdutoQuery,
+        produto_repository: ProdutoRepository,
         cache_service=CacheService,
     ):
         self.purchase_repository = purchase_repository
         self.purchase_query = purchase_query
-        self.produto_query = produto_query
+        self.produto_repository = produto_repository
         self.cache_service = cache_service
 
     @abstractmethod

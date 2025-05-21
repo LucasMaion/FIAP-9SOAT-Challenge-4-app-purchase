@@ -1,7 +1,7 @@
-from src.adapters.data_mappers.produto_entity_data_mapper import ProdutoEntityDataMapper
 from src.adapters.driven.infra.models.purchase_selected_products import (
     PurchaseSelectedProducts,
 )
+from src.core.domain.entities.produto_entity import PartialProdutoEntity
 from src.core.domain.entities.produto_escolhido_entity import ProdutoEscolhidoEntity
 
 
@@ -13,12 +13,10 @@ class ProdutoEscolhidoEntityDataMapper:
     ):
         return ProdutoEscolhidoEntity(
             id=selected_product.product.id,
-            product=ProdutoEntityDataMapper.from_db_to_domain(
-                selected_product.product.product
-            ),
+            product=PartialProdutoEntity(id=selected_product.product.product),
             added_components=[
-                ProdutoEntityDataMapper.from_db_to_domain(comp.component)
-                for comp in selected_product.product.added_components
+                PartialProdutoEntity(id=added_comp.component)
+                for added_comp in selected_product.product.added_components
             ]
             or [],
             created_at=selected_product.product.created_at,

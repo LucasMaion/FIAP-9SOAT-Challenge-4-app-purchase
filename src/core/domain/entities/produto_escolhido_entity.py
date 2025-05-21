@@ -1,12 +1,12 @@
 from typing import List, Optional
 
 from src.core.domain.base.entity import Entity, PartialEntity
-from src.core.domain.entities.produto_entity import ProdutoEntity
+from src.core.domain.entities.produto_entity import PartialProdutoEntity, ProdutoEntity
 
 
 class ProdutoEscolhidoEntity(Entity):
-    product: ProdutoEntity
-    added_components: Optional[List[ProdutoEntity]] = None
+    product: PartialProdutoEntity
+    added_components: Optional[List[PartialProdutoEntity]] = None
 
 
 class PartialProdutoEscolhidoEntity(PartialEntity, ProdutoEscolhidoEntity):

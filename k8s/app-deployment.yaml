@@ -1,26 +1,26 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app
+  name: app-purchase
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: app
+      app: app-purchase
   template:
     metadata:
       labels:
-        app: app
+        app: app-purchase
     spec:
       containers:
-        - name: app
+        - name: app-purchase
           image: 590989737979.dkr.ecr.us-east-1.amazonaws.com/application-repo:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
           envFrom:
             - configMapRef:
-                name: app-config
+                name: app-purchase-config
             - secretRef:
                 name: db-secrets
           resources:

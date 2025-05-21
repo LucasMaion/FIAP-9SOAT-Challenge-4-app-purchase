@@ -2,12 +2,15 @@ from typing import Annotated, List, Optional, Union
 from loguru import logger
 from fastapi import APIRouter, HTTPException, Query
 
+from src.adapters.driven.api.repositories.api_produto_reporitory import (
+    ApiProdutoRepository,
+)
 from src.adapters.driven.infra.ports.orm_pedido_query import OrmPedidoQuery
-from src.adapters.driven.infra.ports.orm_produto_query import OrmProductQuery
 from src.adapters.driven.infra.repositories.orm_pedido_repository import (
     OrmPedidoRepository,
 )
 from src.adapters.driver.API.schemas.create_purchase_schema import CreatePurchaseSchema
+from src.adapters.driver.API.schemas.update_status_schema import UpdateStatusSchema
 from src.core.application.services.pedido_service_command import PedidoServiceCommand
 from src.core.application.services.pedido_service_query import PedidoServiceQuery
 from src.core.domain.aggregates.pedido_aggregate import PedidoAggregate
@@ -28,27 +31,14 @@ router = APIRouter(
 pedido_command = PedidoServiceCommand(
     OrmPedidoRepository(InMemoryCacheService()),
     OrmPedidoQuery(),
-    OrmProductQuery(),
+    ApiProdutoRepository(),
     InMemoryCacheService(),
 )
 
 
-@router.get("/{pedido_id}")
-async def get_pedido(pedido_id: int) -> PedidoAggregate:
-    try:
-        query = PedidoServiceQuery(OrmPedidoQuery())
-        return query.get(pedido_id=pedido_id)
-    except (ValueError, AttributeError) as e:
-        logger.exception(e)
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        logger.exception(e)
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/")
+@router.get("/index")
 async def list_pedidos(
-    status: Annotated[list[int] | None, Query()] = None,
+    status: Optional[int] = None,
     min_value: Optional[float] = None,
     max_value: Optional[float] = None,
 ) -> Union[List[PedidoAggregate], None]:
@@ -58,8 +48,7 @@ async def list_pedidos(
         if any([status, min_value, max_value]):
             query_status = []
             status = status or []
-            for s in status:
-                query_status.append(CompraStatus(s))
+            query_status.append(CompraStatus(status))
             price_range = structure_value_range(min_value, max_value)
             query_options = PedidoFindOptions(
                 status=query_status, price_range=price_range
@@ -74,7 +63,7 @@ async def list_pedidos(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/")
+@router.post("/make")
 async def create_pedido(pedido: CreatePurchaseSchema) -> CompraEntity:
     try:
         purchase = PartialCompraEntity(
@@ -87,6 +76,19 @@ async def create_pedido(pedido: CreatePurchaseSchema) -> CompraEntity:
             ),
         )
         return pedido_command.create_pedido(purchase).purchase
+    except (ValueError, AttributeError) as e:
+        logger.exception(e)
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.exception(e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/{pedido_id}")
+async def get_pedido(pedido_id: int) -> PedidoAggregate:
+    try:
+        query = PedidoServiceQuery(OrmPedidoQuery())
+        return query.get(pedido_id=pedido_id)
     except (ValueError, AttributeError) as e:
         logger.exception(e)
         raise HTTPException(status_code=400, detail=str(e))
@@ -139,6 +141,18 @@ async def concludes_pedido(pedido_id: int) -> PedidoAggregate:
 async def cancel_pedido(pedido_id: int) -> PedidoAggregate:
     try:
         return pedido_command.cancel_pedido(pedido_id)
+    except (ValueError, AttributeError) as e:
+        logger.exception(e)
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.exception(e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/update_status")
+async def update(data: UpdateStatusSchema) -> PedidoAggregate:
+    try:
+        return pedido_command.update_status(data.pedido_id, CompraStatus[data.status])
     except (ValueError, AttributeError) as e:
         logger.exception(e)
         raise HTTPException(status_code=400, detail=str(e))
