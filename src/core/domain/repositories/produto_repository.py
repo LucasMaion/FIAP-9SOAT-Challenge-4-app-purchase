@@ -10,21 +10,13 @@ from src.core.helpers.options.produto_find_options import ProdutoFindOptions
 class ProdutoRepository(Repository, ABC):
 
     @abstractmethod
-    def create(self, produto: PartialProdutoEntity) -> ProdutoAggregate:
+    def sync(self, produto: PartialProdutoEntity) -> ProdutoAggregate:
         raise NotImplementedError()
 
     @abstractmethod
-    def update(self, produto: ProdutoEntity) -> ProdutoAggregate:
+    def get_from_purchase(self, produto_id: int) -> ProdutoAggregate:
         raise NotImplementedError()
 
     @abstractmethod
-    def delete(self, produto_id: int):
-        raise NotImplementedError()
-
-    @abstractmethod
-    def get_by_product_id(self, produto_id: int) -> ProdutoAggregate:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def find(self, query_options: ProdutoFindOptions) -> list[ProdutoAggregate]:
+    def get_entity(self, produto_id: int) -> ProdutoAggregate:
         raise NotImplementedError()

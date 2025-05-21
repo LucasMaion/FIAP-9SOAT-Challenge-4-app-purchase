@@ -2,7 +2,6 @@ from peewee import JOIN
 from src.adapters.data_mappers.pedido_aggregate_data_mapper import (
     PedidoAggregateDataMapper,
 )
-from src.adapters.driven.infra.models.categories import Category
 from src.adapters.driven.infra.models.currencies import Currency
 from src.adapters.driven.infra.models.payments import Payment
 from src.adapters.driven.infra.models.persona import Persona

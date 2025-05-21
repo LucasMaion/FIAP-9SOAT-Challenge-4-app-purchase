@@ -42,16 +42,14 @@ class PedidoServiceCommand(IPedidoCommand):
         pedido = self.purchase_repository.get_by_purchase_id(pedido_id)
         if not pedido:
             raise ValueError("Pedido não encontrado")
-        produto = self.cache_service.get(
-            product_id
-        ) or self.produto_query.get_only_entity(product_id)
+        produto = self.produto_repository.get_entity(product_id)
         self.cache_service.set(product_id, produto)
         if not produto:
             raise ValueError("Produto não encontrado")
         if pedido.purchase.status != CompraStatus.CRIANDO:
             raise ValueError("Pedido não está mais aberto.")
         selected_product = PartialProdutoEscolhidoEntity(
-            product=produto, added_components=[]
+            product=produto.product, added_components=[]
         )
         pedido.purchase.selected_products.append(selected_product)
         pedido.purchase.total.value = self._calculate_total_value(pedido.purchase)
@@ -76,7 +74,7 @@ class PedidoServiceCommand(IPedidoCommand):
         pedido = self.purchase_repository.get_by_purchase_id(pedido_id)
         adding_product = self.cache_service.get(
             selected_product_id
-        ) or self.produto_query.get_only_entity(selected_product_id)
+        ) or self.produto_repository.get_entity(selected_product_id)
         self.cache_service.set(selected_product_id, adding_product)
         if not any(
             component
@@ -86,7 +84,7 @@ class PedidoServiceCommand(IPedidoCommand):
             raise ValueError("Produto não possui esse adicional.")
         new_component = self.cache_service.get(
             component_id
-        ) or self.produto_query.get_only_entity(component_id)
+        ) or self.produto_repository.get_entity(component_id)
         self.cache_service.set(component_id, new_component)
         target_selected_product = next(
             (

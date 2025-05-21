@@ -2,8 +2,10 @@ from typing import List, Union
 from fastapi import APIRouter, HTTPException
 from loguru import logger
 
+from src.adapters.driven.api.repositories.api_produto_reporitory import (
+    ApiProdutoRepository,
+)
 from src.adapters.driven.infra.ports.orm_pedido_query import OrmPedidoQuery
-from src.adapters.driven.infra.ports.orm_produto_query import OrmProductQuery
 from src.adapters.driven.infra.repositories.orm_pedido_repository import (
     OrmPedidoRepository,
 )
@@ -22,7 +24,7 @@ router = APIRouter(
 pedido_command = PedidoServiceCommand(
     OrmPedidoRepository(InMemoryCacheService()),
     OrmPedidoQuery(),
-    OrmProductQuery(),
+    ApiProdutoRepository(),
     InMemoryCacheService(),
 )
 

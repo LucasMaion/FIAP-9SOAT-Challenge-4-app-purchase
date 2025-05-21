@@ -9,13 +9,13 @@ from src.core.domain.aggregates.pedido_aggregate import PedidoAggregate
 class PedidoAggregateDataMapper:
     @classmethod
     def from_db_to_domain(
-        cls, purchase: Purchase, payments: Optional[List[Payment]] = None
+        cls, purchase: Purchase, payments: Optional[List[dict]] = None
     ):
         return PedidoAggregate(
             purchase=CompraEntityDataMapper.from_db_to_domain(purchase),
             payments=(
                 [
-                    PagamentoEntityDataMapper.from_db_to_domain(payment)
+                    PagamentoEntityDataMapper.from_api_to_domain(payment)
                     for payment in payments
                 ]
                 if payments

@@ -17,33 +17,20 @@ from src.core.helpers.enums.pagamento_status import PagamentoStatus
 
 class PagamentoEntityDataMapper:
     @classmethod
-    def from_db_to_domain(cls, payment: Payment):
+    def from_api_to_domain(cls, api_response: dict):
         return PartialPagamentoEntity(
-            id=payment.id,
-            created_at=payment.created_at,
-            updated_at=payment.updated_at,
-            deleted_at=payment.deleted_at,
-            payment_method=MeioDePagamentoEntityDataMapper.from_db_to_domain(
-                payment.payment_method
+            id=api_response["id"],
+            created_at=api_response["created_at"],
+            updated_at=api_response["updated_at"],
+            deleted_at=api_response["deleted_at"],
+            payment_method=MeioDePagamentoEntityDataMapper.from_api_to_domain(
+                api_response["payment_method"]
             ),
-            status=PagamentoStatus(payment.status),
+            status=PagamentoStatus(api_response["status"]),
             payment_value=PrecoValueObject(
-                value=Decimal(payment.value),
-                currency=CurrencyEntityDataMapper.from_db_to_domain(payment.currency),
+                value=Decimal(api_response["value"]),
+                currency=CurrencyEntityDataMapper.from_db_to_domain(
+                    api_response["currency"]
+                ),
             ),
         )
-
-    @classmethod
-    def from_domain_to_db(
-        cls,
-        payment: PartialPagamentoEntity,
-        purchase: Optional[PartialCompraEntity] = None,
-    ):
-        return {
-            "id": payment.id,
-            "payment_method": payment.payment_method.id,
-            "status": payment.status.value,
-            "value": payment.payment_value.value,
-            "currency": payment.payment_value.currency.id,
-            "purchase": purchase.id if purchase else None,
-        }
