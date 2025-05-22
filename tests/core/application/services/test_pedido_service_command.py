@@ -7,6 +7,7 @@ from src.core.application.ports.pedido_query import PedidoQuery
 from src.core.application.ports.produto_query import ProdutoQuery
 from src.core.application.services.pedido_service_command import PedidoServiceCommand
 from src.core.domain.aggregates.pedido_aggregate import PedidoAggregate
+from src.core.domain.aggregates.produto_aggregate import ProdutoAggregate
 from src.core.domain.entities.categoria_entity import CategoriaEntity
 from src.core.domain.entities.cliente_entity import ClienteEntity
 from src.core.domain.entities.compra_entity import CompraEntity
@@ -226,13 +227,17 @@ class TestPedidoService:
         purchase_service.purchase_repository.create.assert_called_once()
 
     def test_add_product_to_existing_purchase_successfully(
-        self, purchase_service: PedidoServiceCommand, pedido_aggregate: PedidoAggregate
+        self,
+        purchase_service: PedidoServiceCommand,
+        pedido_aggregate: PedidoAggregate,
     ):
         purchase_service.purchase_repository.get_by_purchase_id = MagicMock(
             return_value=pedido_aggregate
         )
         purchase_service.produto_repository.get_entity = MagicMock(
-            return_value=pedido_aggregate.purchase.selected_products[0].product
+            return_value=ProdutoAggregate(
+                product=pedido_aggregate.purchase.selected_products[0].product,
+            )
         )
         purchase_service.purchase_repository.update = MagicMock(
             return_value=pedido_aggregate.purchase
